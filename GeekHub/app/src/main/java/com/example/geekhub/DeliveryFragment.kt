@@ -48,6 +48,7 @@ class DeliveryFragment : Fragment() {
     var saveReceivePosition = 0
     var saveDeliveryPosition = 0
     var delComponentSwitch = false
+
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -150,11 +151,17 @@ class DeliveryFragment : Fragment() {
 
             override fun onResponse(call: Call<DeliveryList>, response: Response<DeliveryList>) {
                 val result = response.body()
+                println(result)
 
                 if(result?.isFinished == true
                 ){
-                    Toast.makeText(requireContext(),"업무가 끝났습니다 수고하셨습니다",Toast.LENGTH_SHORT).show()
-                    (activity as MainActivity).finished()
+//                    try{(activity as MainActivity).finished()
+//
+//                    }catch (e:Error){
+//
+//                    }
+
+
                 }
 
 
@@ -213,7 +220,10 @@ class DeliveryFragment : Fragment() {
                 }else{
                     selectDeliveryList(deldatas)
                 }
-                loadingDialog!!.dismiss()
+                if(loadingDialog != null){
+                    loadingDialog!!.dismiss()
+                    loadingDialog = null
+                }
             } })
     }
 
@@ -362,6 +372,14 @@ class DeliveryFragment : Fragment() {
 
             }
         })
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if(loadingDialog != null){
+            loadingDialog!!.dismiss()
+            loadingDialog = null
+        }
     }
 
 

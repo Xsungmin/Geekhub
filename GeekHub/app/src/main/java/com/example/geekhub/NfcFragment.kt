@@ -4,16 +4,20 @@ import OnSwipeTouchListener
 import android.app.Application
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.geekhub.databinding.FragmentNfcBinding
@@ -25,6 +29,9 @@ class NfcFragment : Fragment() {
     var title:String? = "s"
     var state = 0
     var url:String? = "url"
+    var idx:String? = "idx"
+    lateinit var pref : SharedPreferences
+    lateinit var userid : String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,6 +42,7 @@ class NfcFragment : Fragment() {
         arguments?.let{
             title = it.getString("title")
             url = it.getString("url")
+            idx = it.getString("idx")
             binding.nfcTitle.text = title
         }
 
@@ -58,6 +66,23 @@ class NfcFragment : Fragment() {
 
 
         })
+
+        pref = requireActivity().getSharedPreferences("idKey",0)
+        userid = pref.getString("id", "").toString()
+
+
+        binding.nfcInfomation1.visibility = View.VISIBLE
+        binding.waitingButton.visibility = View.INVISIBLE
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            binding.nfcInfomation1.visibility = View.INVISIBLE
+            binding.waitingButton.visibility = View.VISIBLE
+
+        }, 6000)
+
+        binding.waitingButton.setOnClickListener{
+            (activity as MainActivity).sendUserId(idx!!,userid,"비NFC")
+        }
 
 
         return binding.root
@@ -89,7 +114,8 @@ class NfcFragment : Fragment() {
 
         }catch (e: Exception){
             Log.e("NFC미지원 단말기",e.toString())
-
+            binding.nfcInfomation1.visibility = View.INVISIBLE
+            binding.waitingButton.visibility = View.VISIBLE
         }
         
     }

@@ -83,7 +83,8 @@ class ChattingFragment : Fragment() {
 
         getChattingRoom(userid)
 
-        binding.chattingForm                                                                                                                                                                                                                                                                                      .setOnTouchListener(object: OnSwipeTouchListener(requireContext()){
+        binding.chattingForm
+            .setOnTouchListener(object: OnSwipeTouchListener(requireContext()){
             override fun onSwipeBottom() {
                 super.onSwipeBottom()
                 (activity as MainActivity).changeFragment(7)

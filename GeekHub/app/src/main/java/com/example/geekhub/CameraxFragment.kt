@@ -83,11 +83,14 @@ class CameraxFragment : Fragment() {
             spot = it.getString("spot")
             userid = it.getString("userid")
         }
-        if (title != "널"){
+        if (title != "널" && title != "비NFC"){
             binding.cameraTitle.setText("배달지는 ${title}입니다")
 
-        }else{
-            binding.sendPicture.setText("수령완료")
+        }else if (title != "비NFC"){
+            binding.sendPicture.setText("수령 완료")
+        }
+        else{
+            binding.sendPicture.setText("수령 완료")
         }
 
         requestPermission()
@@ -114,7 +117,7 @@ class CameraxFragment : Fragment() {
             loadingDialog!!.show()
             send()
 
-            (activity as MainActivity).finishCheck(userid!!)
+//            (activity as MainActivity).finishCheck(userid!!)
         }
 
         return binding.root
@@ -238,6 +241,7 @@ class CameraxFragment : Fragment() {
     }
 
     fun finishFragment() {
+
         val fragmentManager = requireActivity().supportFragmentManager
         fragmentManager.beginTransaction().remove(this@CameraxFragment).commit()
         fragmentManager.popBackStack()
@@ -266,7 +270,7 @@ class CameraxFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.N)
     fun send(){
-        var time = (requireActivity() as MainActivity).getTime()
+        var time = (activity as MainActivity).getTime()
         val body = RequestBody.create(MediaType.parse("image/*"),imageFile)
         val image = MultipartBody.Part.createFormData("image",imageFile.name,body)
         val userBody = RequestBody.create(MediaType.parse("text/plain"), userid)
@@ -277,23 +281,21 @@ class CameraxFragment : Fragment() {
             .addConverterFactory(GsonConverterFactory.create()).build()
         val callData = retrofit.create(NetWorkInterface::class.java)
         val call = callData.sendimage(image,userBody,spotBody,timeBody)
-
         call.enqueue(object : Callback<String>{
             override fun onFailure(call: Call<String>, t: Throwable) {
-//                Toast.makeText(requireActivity(),"전송을 실패했습니다.",Toast.LENGTH_SHORT).show()
+
                 finishFragment()
                 (activity as MainActivity).next(userid!!)
                 (activity as MainActivity).findPath()
-                (activity as MainActivity).changeFragment(7)
                 (activity as MainActivity).cntClear()
+                (activity as MainActivity).finishCheck(userid!!)
             }
             override fun onResponse(call: Call<String>, response: Response<String>) {
                 finishFragment()
                 (activity as MainActivity).next(userid!!)
                 (activity as MainActivity).findPath()
-                (activity as MainActivity).changeFragment(7)
                 (activity as MainActivity).cntClear()
-
+                (activity as MainActivity).finishCheck(userid!!)
             }
         })}
 
@@ -335,16 +337,5 @@ class CameraxFragment : Fragment() {
         super.onStop()
         if(loadingDialog !=null){
             loadingDialog!!.dismiss()
-        }
-
-    }
-
-
-
-
-
-
-
-
+        } }
 }
-

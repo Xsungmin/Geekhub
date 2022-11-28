@@ -4,22 +4,11 @@ import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.view.isInvisible
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.geekhub.data.DeliveryList
-import com.example.geekhub.data.DeliveryResponse
 import com.example.geekhub.databinding.ActivityReadyBinding
-import com.example.geekhub.databinding.RecyclerReadyListBinding
 import com.example.geekhub.retrofit.NetWorkInterface
 import retrofit2.Call
 import retrofit2.Callback
@@ -61,6 +50,7 @@ class ReadyActivity : AppCompatActivity() {
                 val result = response.body()
                 if (result!!.isFinished == true){
                     binding.deliveryFree.setText("오늘의 일을 완료했어요!")
+                    Toast.makeText(applicationContext,"업무가 끝났습니다 수고하셨습니다",Toast.LENGTH_SHORT).show()
 
                     return
                 }

@@ -17,7 +17,7 @@
     <string name="backspace">뒤로가기</string>
     <string name="take_picture">재촬영</string>
     <string name="go_picture">사진찍기</string>
-    <string name="send">배달완료</string>ㅎ
+    <string name="send">배달 완료</string>ㅎ
     <string name="colleague">동료기사</string>
     <string name="admin">관리자</string>
     <string name="rest_day">오늘은 쉬는날이에요!</string>
@@ -27,7 +27,7 @@
     <string name="title_activity_start">StartActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
+    <string name="waiting_camera">수동 촬영</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="re_photo">재촬영이 필요하면 눌러주세요</string>
