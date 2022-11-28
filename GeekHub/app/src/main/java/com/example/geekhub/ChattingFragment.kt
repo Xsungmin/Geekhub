@@ -31,9 +31,6 @@ import com.example.geekhub.databinding.FragmentChattingBinding
 import com.example.geekhub.databinding.RecyclerChattingBinding
 import com.example.geekhub.retrofit.NetWorkInterface
 import com.example.todayfilm.LoadingDialog
-import kotlinx.android.synthetic.main.fragment_chatting.*
-import kotlinx.android.synthetic.main.fragment_delivery.*
-import kotlinx.android.synthetic.main.fragment_delivery.view.*
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback

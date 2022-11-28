@@ -23,18 +23,11 @@ import com.example.geekhub.databinding.FragmentDeliveryBinding
 import com.example.geekhub.databinding.RecyclerDeliveryListBinding
 import com.example.geekhub.retrofit.NetWorkInterface
 import com.example.todayfilm.LoadingDialog
-import kotlinx.android.synthetic.main.activity_login.*
-import kotlinx.android.synthetic.main.fragment_delivery.*
-import kotlinx.android.synthetic.main.fragment_nav.view.*
-import kotlinx.coroutines.processNextEventInCurrentThread
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import java.security.cert.PKIXRevocationChecker.Option
-import java.util.Objects
 
 
 class DeliveryFragment : Fragment() {

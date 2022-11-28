@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.GeekHub" parent="Theme.AppCompat.Light">
+        <!-- Primary brand color. -->
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/gick_blue</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <item name="colorAccent">@color/black</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>
