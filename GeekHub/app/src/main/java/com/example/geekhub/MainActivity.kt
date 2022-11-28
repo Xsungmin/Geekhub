@@ -12,6 +12,7 @@ import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.net.Uri
+import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.Ndef
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
     lateinit var pref : SharedPreferences
     var backKeyPressedTime:Long= 0
     var loadingDialog: LoadingDialog? = null
-
+    var checkBack = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,7 +130,7 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0);
         }
         gps = TMapGpsManager(this)
-        gps!!.minTime = 100000
+        gps!!.minTime = 20000
         gps!!.minDistance = 0F
         gps!!.provider = TMapGpsManager.GPS_PROVIDER
         gps!!.OpenGps()
@@ -219,7 +220,9 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
 
     private fun initialize(userid: String) {
         tMapView = TMapView(this)
-        tMapView.setSKTMapApiKey("l7xx9f33576ed47042d3ac571c8a70c73e31")
+        tMapView.setSKTMapApiKey("l7xx04b0f932024e4b34acb560a2d2d3a2dc")
+//        l7xx04b0f932024e4b34acb560a2d2d3a2dc
+
         val linearLayoutTmap: LinearLayout =
             findViewById<LinearLayout>(R.id.linearLayoutTmap)
         linearLayoutTmap.addView(tMapView)
@@ -306,8 +309,16 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         var tagFromIntent: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
         if (tagFromIntent != null) {
             var data = Ndef.get(tagFromIntent)
-            data.connect()
-            var message = data.ndefMessage
+            println("정체")
+            var message : NdefMessage? = null
+            try{
+                data.connect()
+                message = data.ndefMessage
+            }catch (e:Exception){
+
+
+            }
+
             if (message != null){
                 var record = message.records
                 for (records in record) {
@@ -372,10 +383,10 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         bundle.putString("url",url)
         fragment.arguments = bundle
 
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.main_container_view, fragment)
-                .addToBackStack(null)
-                .commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_container_view, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
 
@@ -484,7 +495,7 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
     }
 
     fun finished() {
-        startActivity(Intent(this@MainActivity,ReadyActivity::class.java))
+//        startActivity(Intent(this@MainActivity,ReadyActivity::class.java))
         finish()
 
     }
@@ -513,21 +524,25 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                 val result = response.body()
 
                 if (result!!.isFinished == true){
-
-
+                    clearBackStack()
+                    checkBack =1
                     val intent = Intent(applicationContext, ReadyActivity::class.java)
                     startActivity(intent)
                     finish()
+
                     return
                 }
 
                 if (result!!.del.size + result!!.rec.size == 0){
-
+//                    clearBackStack()
+//                    checkBack =1
                     val intent = Intent(applicationContext, ReadyActivity::class.java)
                     startActivity(intent)
                     finish()
                     return
                 }
+
+                changeFragment(4)
 
 
             } })
@@ -542,6 +557,7 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         }
 
     }
+
     }
 
 

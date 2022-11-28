@@ -83,10 +83,6 @@ class NfcFragment : Fragment() {
         binding.waitingButton.setOnClickListener{
             (activity as MainActivity).sendUserId(idx!!,userid,"비NFC")
         }
-        println(idx)
-        println(userid)
-        println("체크"
-        )
 
 
         return binding.root

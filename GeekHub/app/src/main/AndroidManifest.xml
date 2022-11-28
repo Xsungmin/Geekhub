@@ -101,4 +101,11 @@
         </activity>
     </application>
 
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+<!--    api30이상-->
+
 </manifest>
