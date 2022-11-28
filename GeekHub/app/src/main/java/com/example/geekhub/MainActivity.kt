@@ -198,9 +198,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
 
         }
 
-//        binding.rootButton.setOnClickListener {
-//            findPath()
-//        }
 
         var intentFiltersArray = arrayOf(ndef)
         var techListsArray = arrayOf(arrayOf<String>(NfcF::class.java.name))
@@ -213,15 +210,9 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         // nfc
     }
 
-//    public override fun onNewIntent(intent: Intent) {
-//        val tagFromIntent: Tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
-//        //do something with tagFromIntent
-//    }
-
     private fun initialize(userid: String) {
         tMapView = TMapView(this)
         tMapView.setSKTMapApiKey("l7xx04b0f932024e4b34acb560a2d2d3a2dc")
-//        l7xx04b0f932024e4b34acb560a2d2d3a2dc
 
         val linearLayoutTmap: LinearLayout =
             findViewById<LinearLayout>(R.id.linearLayoutTmap)
@@ -233,7 +224,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         if (location != null) {
             sendLocation()
             addMarker()
-//            tMapPointStart = gps!!.location
             if (focusStatus == 1){
                 tMapView.setCenterPoint(gps!!.location.longitude, gps!!.location.latitude)
             }
