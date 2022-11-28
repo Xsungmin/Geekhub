@@ -26,7 +26,6 @@ class NfcFragment : Fragment() {
     var state = 0
     var url:String? = "url"
     var idx:String? = "idx"
-    lateinit var pref : SharedPreferences
     lateinit var userid : String
 
     override fun onCreateView(
@@ -34,7 +33,6 @@ class NfcFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentNfcBinding.inflate(inflater,container,false)
-        // Inflate the layout for this fragment
         arguments?.let{
             title = it.getString("title")
             url = it.getString("url")
@@ -43,7 +41,6 @@ class NfcFragment : Fragment() {
         }
 
         binding.nfcInfomation1.setText("아래 버튼을 눌러 nfc를 켜주세요!\nnfc를 꼭 일반모드로 설정해주세요")
-
         binding.nfcTitle.isSelected = true
 
         Glide.with(requireContext())
@@ -59,21 +56,14 @@ class NfcFragment : Fragment() {
                 super.onSwipeBottom()
                 (activity as MainActivity).changeFragment(7)
             }
-
-
         })
-
-        pref = requireActivity().getSharedPreferences("idKey",0)
-        userid = pref.getString("id", "").toString()
-
-
+        userid = (activity as MainActivity).getId()
         binding.nfcInfomation1.visibility = View.VISIBLE
         binding.waitingButton.visibility = View.INVISIBLE
 
         Handler(Looper.getMainLooper()).postDelayed({
             binding.nfcInfomation1.visibility = View.INVISIBLE
             binding.waitingButton.visibility = View.VISIBLE
-
         }, 6000)
 
         binding.waitingButton.setOnClickListener{
@@ -87,7 +77,6 @@ class NfcFragment : Fragment() {
 
 
     fun getNfc(){
-
         try{
             var nfcAdapter = NfcAdapter.getDefaultAdapter(requireActivity().applicationContext)
 
@@ -104,8 +93,6 @@ class NfcFragment : Fragment() {
                 binding.nfcImage.setOnClickListener{
                     startActivity(Intent(android.provider.Settings.ACTION_NFC_SETTINGS))
                 }
-
-
             }
 
         }catch (e: Exception){
@@ -113,7 +100,6 @@ class NfcFragment : Fragment() {
             binding.nfcInfomation1.visibility = View.INVISIBLE
             binding.waitingButton.visibility = View.VISIBLE
         }
-        
     }
 
     override fun onResume() {
