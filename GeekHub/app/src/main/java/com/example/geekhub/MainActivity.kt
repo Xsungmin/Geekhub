@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0);
         }
         // 퍼미션 체크
-        getId()
+        userid = getId()
         initialize(userid)
 
         focusStatus = 1
@@ -157,9 +157,10 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
 
     }
 
-    private fun getId() {
+    fun getId() :String{
         pref = getSharedPreferences("idKey", 0)
         userid = pref.getString("id", "").toString()
+        return userid
     }
 
 
