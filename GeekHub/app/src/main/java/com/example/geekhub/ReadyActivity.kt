@@ -32,7 +32,6 @@ class ReadyActivity : AppCompatActivity() {
         Glide.with(this)
             .load(R.drawable.empty) // 불러올 이미지 url
             .into(binding.deliveryDobby) // 이미지를 넣을 뷰
-
     }
 
     fun getDeliveryList(number : Int){

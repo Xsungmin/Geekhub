@@ -20,14 +20,12 @@ import android.nfc.tech.NfcF
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.add
@@ -47,7 +45,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.charset.StandardCharsets
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.concurrent.thread
@@ -63,8 +60,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
     lateinit var bitmap: Bitmap
     var gps : TMapGpsManager? = null
     var nextSpotInfo : NextSpotInfo? = null
-    var isNext = 0
-    var cnt = 0
     var focusStatus = 1
     val bundle = Bundle()
     lateinit var userid: String
@@ -75,33 +70,8 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        cnt = 0
-        focusStatus = 1
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        pref = getSharedPreferences("idKey", 0)
-        userid = pref.getString("id", "").toString()
-        finishCheck(userid)
-
-        binding.liveFocusButton.setOnClickListener{
-            tMapView.setCenterPoint(gps!!.location.longitude, gps!!.location.latitude)
-        }
-
-        binding.goMainLogo.setOnClickListener{
-            changeFragment(7)
-        }
-
-        next(userid)
-
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.commit {
-                setReorderingAllowed(true)
-                add<DeliveryFragment>(R.id.main_container_view)
-//                add<CameraxFragment>(R.id.camera_view)
-            }
-        }
 
         val MY_PERMISSION_ACCESS_ALL = 100
 
@@ -122,13 +92,17 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
             ActivityCompat.requestPermissions(this, permissions, MY_PERMISSION_ACCESS_ALL)
         } // 퍼미션
 
-        initialize(userid)
 
         val permissionCheck : Int = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
         if (permissionCheck == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0);
         }
+        // 퍼미션 체크
+        getId()
+        initialize(userid)
+
+        focusStatus = 1
         gps = TMapGpsManager(this)
         gps!!.minTime = 20000
         gps!!.minDistance = 0F
@@ -136,6 +110,12 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         gps!!.OpenGps()
         gps!!.provider = TMapGpsManager.NETWORK_PROVIDER
         gps!!.OpenGps()
+
+        finishCheck(userid,savedInstanceState)
+        next(userid)
+
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        //nfc
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener {
@@ -148,37 +128,14 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         binding.liveFocusButton.setOnClickListener{
             tMapView.setCenterPoint(gps!!.location.longitude, gps!!.location.latitude)
         }
-
-
         activeChat()
-
         // 채팅버튼
-        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        //nfc
-    }
-
-    public override fun onPause() {
-        super.onPause()
-        nfcAdapter?.disableForegroundDispatch(this)
-    }
-
-    public override fun onResume() {
-        super.onResume()
-        cnt = 0
-        val intent: Intent = Intent(this, javaClass).apply {
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        binding.liveFocusButton.setOnClickListener{
+            tMapView.setCenterPoint(gps!!.location.longitude, gps!!.location.latitude)
         }
-        var pendingIntent: PendingIntent =
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE)
-        val ndef = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED).apply {
-            try {
-                addDataType("*/*")    /* Handles all MIME based dispatches.
-                                     You should specify only the ones that you need. */
-            } catch (e: IntentFilter.MalformedMimeTypeException) {
-                throw RuntimeException("fail", e)
-            }
+        binding.goMainLogo.setOnClickListener{
+            changeFragment(7)
         }
-
         binding.navButton.setOnClickListener {
 
             Toast.makeText(this,"네비게이션을 로드하고 있습니다",Toast.LENGTH_SHORT).show()
@@ -198,6 +155,35 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
 
         }
 
+    }
+
+    private fun getId() {
+        pref = getSharedPreferences("idKey", 0)
+        userid = pref.getString("id", "").toString()
+    }
+
+
+    public override fun onPause() {
+        super.onPause()
+        nfcAdapter?.disableForegroundDispatch(this)
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        val intent: Intent = Intent(this, javaClass).apply {
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        var pendingIntent: PendingIntent =
+            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE)
+
+        var ndef = IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED).apply {
+            try {
+                addDataType("*/*")    /* Handles all MIME based dispatches.
+                                     You should specify only the ones that you need. */
+            } catch (e: IntentFilter.MalformedMimeTypeException) {
+                throw RuntimeException("fail", e)
+            }
+        }
 
         var intentFiltersArray = arrayOf(ndef)
         var techListsArray = arrayOf(arrayOf<String>(NfcF::class.java.name))
@@ -228,28 +214,21 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                 tMapView.setCenterPoint(gps!!.location.longitude, gps!!.location.latitude)
             }
             findPath()
-
         }
     }
-
 
     fun changeFragment(index: Int) {
         when (index) {
             1 -> {
                 moveFragment(DeliveryFragment())
             }
-
-
             3 -> {
                 moveFragment(NfcFragment())
             }
-
             4 -> {
                 clearBackStack()
                 moveFragment(DeliveryFragment())
-
             }
-
             5 -> {
                 clearBackStack()
                 moveFragment(DeliveryFragment())
@@ -272,8 +251,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         binding.goChatting.setOnClickListener{
             moveFragment(ChattingFragment())
         }
-
-
     }
 
 
@@ -305,22 +282,15 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                 data.connect()
                 message = data.ndefMessage
             }catch (e:Exception){
-
-
+                Log.e("에러",e.toString())
             }
-
             if (message != null){
                 var record = message.records
                 for (records in record) {
                     var convert = String(records.payload, StandardCharsets.UTF_8)
                     var spot = convert.substring(3)
                     sendUserId(spot,userid,"널")
-                }
-
-            }
-
-        }
-
+                } } }
     }
 
     fun findPath() {
@@ -335,7 +305,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                     tMapPolyLine.lineColor = Color.rgb(14,23,55)
                     tMapPolyLine.outLineColor = Color.rgb(14,23,55)
                     tMapPolyLine.outLineWidth = 20F
-
                     tMapPolyLine.setLineWidth(0F)
                     tMapView.addTMapPolyLine("Line1", tMapPolyLine)
 
@@ -372,13 +341,11 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         bundle.putString("idx",idx)
         bundle.putString("url",url)
         fragment.arguments = bundle
-
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_container_view, fragment)
             .addToBackStack(null)
             .commit()
     }
-
 
     fun sendUserId(spot: String,userid:String,title: String) {
         val fragment = CameraxFragment()
@@ -388,7 +355,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         fragment.arguments = bundle
         supportFragmentManager.beginTransaction()
             .remove(DeliveryFragment()).commit()
-
         supportFragmentManager.beginTransaction().add(R.id.camera_view,fragment).addToBackStack(null).commit()
     }
 
@@ -396,13 +362,11 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         var markerItem = TMapMarkerItem()
         markerItem.tMapPoint = TMapPoint(gps!!.location.latitude, gps!!.location.longitude)
         markerItem.name = "현위치"
-//        markerItem.visible = TMapMarkerItem.VISIBLE
         bitmap = BitmapFactory.decodeResource(this.resources, R.drawable.pin_r_rn_1)
         markerItem.icon = bitmap
         markerItem.setPosition(0F, 0F)
         tMapView.addMarkerItem("현위치", markerItem)
     }
-
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun sendLocation() {
@@ -410,12 +374,8 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
             .addConverterFactory(GsonConverterFactory.create()).build()
         val callData = retrofit.create(NetWorkInterface::class.java)
         val locationBody = LocationInfo()
-
         pref = getSharedPreferences("idKey", 0)
         userid = pref.getString("id", "").toString()
-
-
-
         locationBody.driver = userid
         locationBody.longitude = gps!!.location.longitude.toString()
         locationBody.latitude = gps!!.location.latitude.toString()
@@ -426,9 +386,7 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
             override fun onFailure(call: Call<String?>, t: Throwable) {
                 Log.e("에러났다", t.toString())
             }
-
             override fun onResponse(call: Call<String?>, response: Response<String?>) {
-
             }
         })
     }
@@ -447,8 +405,6 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
         return now
     }
 
-
-
     fun next(userid: String) {
         val retrofit = Retrofit.Builder().baseUrl("http://k7c205.p.ssafy.io:8000/")
             .addConverterFactory(GsonConverterFactory.create()).build()
@@ -460,13 +416,8 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
             }
             override fun onResponse(call: Call<NextSpotInfo>, response: Response<NextSpotInfo>) {
                 nextSpotInfo = response.body()
-
-
             }
         })
-    }
-    fun cntClear() {
-        cnt = 0
     }
 
     override fun onBackPressed() {
@@ -481,29 +432,21 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
             }
         }
         super.onBackPressed()
-
     }
 
-    fun finished() {
-//        startActivity(Intent(this@MainActivity,ReadyActivity::class.java))
-        finish()
-
-    }
 
     fun lockedChat() {
         binding.goChatting.setOnClickListener{
             Toast.makeText(applicationContext,"이미 채팅방이 켜져있습니다",Toast.LENGTH_SHORT).show()
         }}
 
-    fun finishCheck(number:String) {
-
-
+    fun finishCheck(number:String, vararg savedInstanceState: Bundle?) {
+        loadingDialog = LoadingDialog(this)
+        loadingDialog!!.show()
         val retrofit = Retrofit.Builder().baseUrl("http://k7c205.p.ssafy.io:9013/")
             .addConverterFactory(GsonConverterFactory.create()).build()
         val callData = retrofit.create(NetWorkInterface::class.java)
         val call = callData.getlist(number.toInt())
-
-
 
         call.enqueue(object : Callback<DeliveryList> {
             override fun onFailure(call: Call<DeliveryList>, t: Throwable) {
@@ -524,34 +467,27 @@ class MainActivity : AppCompatActivity(), TMapGpsManager.onLocationChangedCallba
                 }
 
                 if (result!!.del.size + result!!.rec.size == 0){
-//                    clearBackStack()
-//                    checkBack =1
                     val intent = Intent(applicationContext, ReadyActivity::class.java)
                     startActivity(intent)
                     finish()
                     return
                 }
 
-                changeFragment(4)
-
-
+                if (savedInstanceState == null) {
+                    supportFragmentManager.commit {
+                        setReorderingAllowed(true)
+                        add<DeliveryFragment>(R.id.main_container_view)
+                    }
+                }else {
+                    changeFragment(4)
+                }
             } })
-
-
+        loadingDialog!!.dismiss()
     }
 
     override fun onRestart() {
         super.onRestart()
         if (loadingDialog != null){
             loadingDialog!!.dismiss()
-        }
-
+        } }
     }
-
-    }
-
-
-
-
-
-
