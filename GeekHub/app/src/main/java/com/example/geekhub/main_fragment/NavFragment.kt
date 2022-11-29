@@ -2,7 +2,6 @@ package com.example.geekhub
 
 import OnSwipeTouchListener
 import android.content.SharedPreferences
-import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -22,7 +21,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 class NavFragment : Fragment() {
     lateinit var binding : FragmentNavBinding
     var spot : String? = null
-    lateinit var pref : SharedPreferences
     lateinit var userid : String
 
     override fun onCreateView(
@@ -30,18 +28,12 @@ class NavFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        pref = requireActivity().getSharedPreferences("idKey", 0)
-        userid = pref.getString("id", "").toString()
+        userid = (activity as MainActivity).getId()
         binding = FragmentNavBinding.inflate(inflater,container,false)
         binding.main.setOnTouchListener(object :OnSwipeTouchListener(requireContext()){
-
-
-
             override fun onTouch(v: View?, event: MotionEvent?): Boolean {
                 (activity as MainActivity).changeFragment(1)
-
                 return false
-
             }
         })
         return binding.root
@@ -49,8 +41,7 @@ class NavFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        pref = requireActivity().getSharedPreferences("idKey", 0)
-        userid = pref.getString("id", "").toString()
+        userid = (activity as MainActivity).getId()
         nextSpot(userid)
     }
 
@@ -63,13 +54,11 @@ class NavFragment : Fragment() {
             override fun onFailure(call: Call<NextSpotInfo>, t: Throwable) {
                 Log.e("에러났다", t.toString())
             }
-
             override fun onResponse(call: Call<NextSpotInfo>, response: Response<NextSpotInfo>) {
                 spot = response.body()?.spotName
                 try {
                     binding.spotNav.setText("${spot.toString()}")
                 }catch (e:java.lang.Error){
-
                 } }
         })
     }
