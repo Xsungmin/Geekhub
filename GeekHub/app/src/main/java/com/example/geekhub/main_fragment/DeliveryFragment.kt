@@ -240,7 +240,7 @@ class DeliveryFragment : Fragment() {
 
 
 
-    inner class DeliveryListAddapter(private var datas : ArrayList<DeliveryResponse>,nowState:Int) :
+    inner class DeliveryListAddapter(private var datas : ArrayList<DeliveryResponse>, nowState:Int) :
         RecyclerView.Adapter<DeliveryListAddapter.ViewHolder>(){
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -311,7 +311,7 @@ class DeliveryFragment : Fragment() {
 
 
         //배달쪽 recyclerview
-        fun visibleList(number: DeliveryResponse,holder:ViewHolder){
+        fun visibleList(number: DeliveryResponse, holder:ViewHolder){
             holder.title.text = number.spotName
             holder.count.text =  "수량 : ${number.count}개"
             holder.time.text = number.expectedTime
