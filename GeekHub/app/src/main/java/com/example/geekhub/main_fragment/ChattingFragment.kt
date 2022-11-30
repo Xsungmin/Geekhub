@@ -23,6 +23,7 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.geekhub.component.adapter.ChattingAddapter
 import com.example.geekhub.data.ChattingRoomResponse
 import com.example.geekhub.data.Member
 import com.example.geekhub.data.messageData
@@ -43,7 +44,6 @@ import kotlin.collections.ArrayList
 
 
 class ChattingFragment : Fragment() {
-
     lateinit var binding: FragmentChattingBinding
     lateinit var listener: RecognitionListener
     lateinit var userid: String
@@ -126,13 +126,8 @@ class ChattingFragment : Fragment() {
                         mRecognizer.startListening((intent))
                     } // 음성인식 시작
                 }
-
             }
         })
-
-
-
-
         return binding.root
     }
 
@@ -184,7 +179,6 @@ class ChattingFragment : Fragment() {
         var call = callData.findChatRoom(userid)
         call.enqueue(object : Callback<ChattingRoomResponse> {
             override fun onFailure(call: Call<ChattingRoomResponse>, t: Throwable) {
-
             }
 
             override fun onResponse(
@@ -204,7 +198,6 @@ class ChattingFragment : Fragment() {
     private fun findMember(school: String) {
         val retrofit = Retrofit.Builder().baseUrl("http://k7c205.p.ssafy.io:8000/")
             .addConverterFactory(GsonConverterFactory.create()).build()
-
         val callData = retrofit.create(NetWorkInterface::class.java)
         val call = callData.findChatMember(school)
         call.enqueue(object : Callback<List<Member>> {
@@ -213,16 +206,13 @@ class ChattingFragment : Fragment() {
             override fun onResponse(call: Call<List<Member>>, response: Response<List<Member>>) {
                 var result = response.body()!!.size
                 binding.chattingPeople.setText("${result+1}명")
-
             }
         })
-
     }
 
     fun openStomp(id: String) {
-
         stompClient.topic("/chat/${id}").subscribe {
-            receiveData(ChattingRoomId!!)
+//            receiveData(ChattingRoomId!!)
             var JsonObject:JSONObject = JSONObject(it.payload)
             var chattingObject : messageData = messageData()
             chattingObject.content = JsonObject.getString("content")
@@ -231,8 +221,11 @@ class ChattingFragment : Fragment() {
             chattingObject.created_at = JsonObject.getString("timestamp")
             chattingList!!.add(chattingObject)
             Handler(Looper.getMainLooper()).post(Runnable(){
-                chatRecycle.adapter!!.notifyItemInserted(chattingList!!.size)
-            })
+                chatRecycle = binding.chattingRecycler
+                chatRecycle.adapter = ChattingAddapter(chattingList!!,userid)
+                chatRecycle.layoutManager =  LinearLayoutManager(activity)
+                chatRecycle.scrollToPosition(chattingList!!.size-1)
+            }) // name,과 create at이 정확하게 나오지는 않아 완전한 구현은 아니지만 갱신 안하고 구현 완료
         }
 
         stompClient.connect()
@@ -244,7 +237,6 @@ class ChattingFragment : Fragment() {
                 }
                 LifecycleEvent.Type.CLOSED -> {
                     Log.i("소CLOSED", "!!")
-
                 }
                 LifecycleEvent.Type.ERROR -> {
                     Log.i("ERROR", "!!")
@@ -255,7 +247,6 @@ class ChattingFragment : Fragment() {
                 }
             }
         }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -287,127 +278,12 @@ class ChattingFragment : Fragment() {
                 response: Response<ArrayList<messageData>>
             ) {
                 chattingList = response.body()
-
                 chatRecycle = binding.chattingRecycler
-                chatRecycle.adapter = ChattingAddapter(chattingList!!)
+                chatRecycle.adapter = ChattingAddapter(chattingList!!,userid)
                 chatRecycle.layoutManager =  LinearLayoutManager(activity)
                 chatRecycle.scrollToPosition(chattingList!!.size-1)
                 loadingDialog!!.dismiss()
-
-
             }
         })
     }
-
-
-    inner class ChattingAddapter(
-        var datas: ArrayList<messageData>
-    ) :
-        RecyclerView.Adapter<ChattingFragment.ChattingAddapter.ViewHolder>() {
-        var previewId = ""
-
-
-
-
-
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
-        ): ChattingFragment.ChattingAddapter.ViewHolder {
-            val binding = RecyclerChattingBinding.inflate(layoutInflater)
-            val holder = ViewHolder(binding)
-            val layoutParams = RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                WRAP_CONTENT
-            )
-
-            binding.root.layoutParams = layoutParams
-
-            return  holder
-
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val data = datas[position]
-//            var v = 0
-//            if ( v == 0){
-//                binding.chattingRecycler.scrollToPosition(itemCount-1)
-//                v +=1
-//            }
-
-
-            if (data.userId == userid){
-
-                previewId = data.userId
-                holder.oContent.visibility = View.INVISIBLE
-                holder.oNickname.visibility = View.INVISIBLE
-                holder.oTime.visibility = View.INVISIBLE
-
-                holder.mTime.visibility = View.VISIBLE
-                holder.mContent.visibility = View.VISIBLE
-
-                holder.mTime.setText(data.created_at)
-                holder.mContent.setText(data.content)
-            }else{
-                holder.oContent.visibility = View.VISIBLE
-                holder.oNickname.visibility = View.VISIBLE
-                holder.oTime.visibility = View.VISIBLE
-
-                holder.mTime.visibility = View.INVISIBLE
-                holder.mContent.visibility = View.INVISIBLE
-
-
-                if( position > 0 && datas[position-1].userId == data.userId){
-                    holder.oNickname.visibility = View.INVISIBLE
-                    holder.oNickname.setText("")
-
-
-                }else{
-                    holder.oNickname.visibility = View.VISIBLE
-                    holder.oNickname.setText(data.name)
-                }
-
-                holder.oContent.setText(data.content)
-                holder.oTime.setText(data.created_at)
-            }
-
-
-
-
-        }
-
-        override fun getItemCount(): Int {
-            return datas.size
-        }
-
-
-
-        inner class ViewHolder(binding: RecyclerChattingBinding)
-            : RecyclerView.ViewHolder(binding.root) {
-            val oNickname = binding.otherNickname
-            val oContent = binding.otherNicknameContent
-            val oTime = binding.otherNicknameTime
-
-            val mContent = binding.myNicknameContent
-            val mTime = binding.myNicknameTime
-
-
-        }
-
-
-
-
-        override fun getItemViewType(position: Int): Int {
-            return if(userid == datas[position].userId)1
-            else if (position > 0 && datas[position-1].userId == datas[position].userId)2
-            else 3
-
-        }
-
-
-
-    }
-
-
-
 }
