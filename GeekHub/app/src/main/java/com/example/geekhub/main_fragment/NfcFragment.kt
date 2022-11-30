@@ -39,6 +39,7 @@ class NfcFragment : Fragment() {
 
         Glide.with(requireContext())
             .load(R.drawable.nfc_animation) // 불러올 이미지 url
+            .override(180,180)
             .into(binding.nfcImage) // 이미지를 넣을 뷰
 
         Glide.with(requireContext())

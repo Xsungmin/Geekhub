@@ -34,4 +34,6 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="loading">"잠시만 기다려주세요..</string>
+    <string name="title_activity_maib">MaibActivity</string>
+    <string name="second_fragment_label">Second Fragment</string>
 </resources>

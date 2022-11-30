@@ -1,8 +1,6 @@
 package com.example.geekhub.retrofit
 
 import com.example.geekhub.data.*
-
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Param
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
