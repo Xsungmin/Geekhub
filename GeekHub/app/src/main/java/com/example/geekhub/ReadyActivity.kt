@@ -31,6 +31,7 @@ class ReadyActivity : AppCompatActivity() {
         getDeliveryList(userid.toInt())
         Glide.with(this)
             .load(R.drawable.empty) // 불러올 이미지 url
+            .override(300,300)
             .into(binding.deliveryDobby) // 이미지를 넣을 뷰
     }
 
@@ -50,19 +51,15 @@ class ReadyActivity : AppCompatActivity() {
                 if (result!!.isFinished == true){
                     binding.deliveryFree.setText("오늘의 일을 완료했어요!")
                     Toast.makeText(applicationContext,"업무가 끝났습니다 수고하셨습니다",Toast.LENGTH_SHORT).show()
-
                     return
                 }
 
                 if (result!!.del.size + result!!.rec.size == 0){
                     binding.deliveryFree.setText("오늘은 업무가 없어요 ~_~")
-
                     return
                 }
                 val intent = Intent(applicationContext, MainActivity::class.java)
                 startActivity(intent)
-
-
             } })
     }
 
@@ -78,7 +75,6 @@ class ReadyActivity : AppCompatActivity() {
             }
         }
         super.onBackPressed()
-
     }
 
 

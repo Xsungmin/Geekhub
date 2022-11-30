@@ -13,7 +13,6 @@ import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.camera.core.*
@@ -39,13 +38,11 @@ import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-
 typealias LumaListener = (luma: Double) -> Unit
 
 private var imageCapture: ImageCapture? = null
 private lateinit var cameraExecutor: ExecutorService
 private const val TAG = "카메라"
-var snackbar : Snackbar? = null
 var loadingDialog: LoadingDialog? = null
 
 class CameraxFragment : Fragment() {
@@ -70,14 +67,12 @@ class CameraxFragment : Fragment() {
         }.toTypedArray()
     //권한
 
-
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCameraxBinding.inflate(inflater,container,false)
-
         arguments?.let{
             title = it.getString("title")
             spot = it.getString("spot")
@@ -85,7 +80,6 @@ class CameraxFragment : Fragment() {
         }
         if (title != "널" && title != "비NFC"){
             binding.cameraTitle.setText("배달지는 ${title}입니다")
-
         }else if (title != "비NFC"){
             binding.sendPicture.setText("수령 완료")
         }
@@ -94,9 +88,6 @@ class CameraxFragment : Fragment() {
         }
 
         requestPermission()
-
-
-
 
         // Set up the listeners for take photo and video capture buttons
         binding.imageCaptureButton.setOnClickListener { takePhoto() }
@@ -116,8 +107,6 @@ class CameraxFragment : Fragment() {
             loadingDialog = LoadingDialog(requireContext())
             loadingDialog!!.show()
             send()
-
-//            (activity as MainActivity).finishCheck(userid!!)
         }
 
         return binding.root
@@ -145,8 +134,6 @@ class CameraxFragment : Fragment() {
         } else {
             // 4. 권한이 승인된 상태
         }
-
-
         startCamera()
     }
     private fun takePhoto() {
@@ -234,14 +221,12 @@ class CameraxFragment : Fragment() {
         callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 finishFragment()
-
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(this, callback)
     }
 
     fun finishFragment() {
-
         val fragmentManager = requireActivity().supportFragmentManager
         fragmentManager.beginTransaction().remove(this@CameraxFragment).commit()
         fragmentManager.popBackStack()
@@ -260,12 +245,9 @@ class CameraxFragment : Fragment() {
             override fun onFailure(call: Call<String>, t: Throwable) {
                 Log.e("에러입니다",t.toString())
             }
-
             override fun onResponse(call: Call<String>, response: Response<String>) {
             }
         })
-
-
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -276,14 +258,12 @@ class CameraxFragment : Fragment() {
         val userBody = RequestBody.create(MediaType.parse("text/plain"), userid)
         val spotBody = RequestBody.create(MediaType.parse("text/plain"), spot)
         var timeBody = RequestBody.create(MediaType.parse("text/plain"), time)
-
         val retrofit = Retrofit.Builder().baseUrl("http://k7c205.p.ssafy.io:9012/")
             .addConverterFactory(GsonConverterFactory.create()).build()
         val callData = retrofit.create(NetWorkInterface::class.java)
         val call = callData.sendimage(image,userBody,spotBody,timeBody)
         call.enqueue(object : Callback<String>{
             override fun onFailure(call: Call<String>, t: Throwable) {
-
                 finishFragment()
                 (activity as MainActivity).next(userid!!)
                 (activity as MainActivity).findPath()
@@ -298,7 +278,6 @@ class CameraxFragment : Fragment() {
         })}
 
     private class LuminosityAnalyzer(private val listener: LumaListener) : ImageAnalysis.Analyzer {
-
         private fun ByteBuffer.toByteArray(): ByteArray {
             rewind()    // Rewind the buffer to zero
             val data = ByteArray(remaining())
@@ -307,14 +286,11 @@ class CameraxFragment : Fragment() {
         }
 
         override fun analyze(image: ImageProxy) {
-
             val buffer = image.planes[0].buffer
             val data = buffer.toByteArray()
             val pixels = data.map { it.toInt() and 0xFF }
             val luma = pixels.average()
-
             listener(luma)
-
             image.close()
         }
     }
@@ -328,7 +304,6 @@ class CameraxFragment : Fragment() {
         ) {
             ActivityCompat.requestPermissions(requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
     }
 
     override fun onStop() {
